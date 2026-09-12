@@ -19,3 +19,5 @@ runs/
 *.pth
 *.onnx
 *.log
+.env
+hf_cache/

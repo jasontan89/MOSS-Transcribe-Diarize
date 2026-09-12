@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  moss-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moss-transcribe-diarize
+    restart: unless-stopped
+    ports:
+      - "${PORT:-7860}:7860"
+    volumes:
+      - ./hf_cache:/root/.cache/huggingface
+      - ./runs:/app/runs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HF_HOME=/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:7860/api/runtime || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: moss-cloudflare-tunnel
+    restart: unless-stopped
+    depends_on:
+      moss-app:
+        condition: service_started
+    # If TUNNEL_TOKEN is set in .env, run a named tunnel with your domain.
+    # Otherwise, spin up a zero-config Quick Tunnel (*.trycloudflare.com).
+    entrypoint: >
+      sh -c '
+        if [ -n "$$TUNNEL_TOKEN" ]; then
+          echo "Starting Cloudflare Named Tunnel..."
+          exec cloudflared tunnel --no-autoupdate run --token "$$TUNNEL_TOKEN"
+        else
+          echo "Starting Cloudflare Quick Tunnel (Free public HTTPS URL)..."
+          exec cloudflared tunnel --no-autoupdate --url http://moss-app:7860
+        fi
+      '
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN:-}

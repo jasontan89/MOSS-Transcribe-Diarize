@@ -1,11 +1,19 @@
-from .configuration_moss_transcribe_diarize import MossTranscribeDiarizeConfig
-from .modeling_moss_transcribe_diarize import (
-    MossTranscribeDiarizeForConditionalGeneration,
-    MossTranscribeDiarizeModel,
-    MossTranscribeDiarizePreTrainedModel,
-    VQAdaptor,
-)
-from .processing_moss_transcribe_diarize import MossTranscribeDiarizeProcessor
+try:
+    from .configuration_moss_transcribe_diarize import MossTranscribeDiarizeConfig
+    from .modeling_moss_transcribe_diarize import (
+        MossTranscribeDiarizeForConditionalGeneration,
+        MossTranscribeDiarizeModel,
+        MossTranscribeDiarizePreTrainedModel,
+        VQAdaptor,
+    )
+    from .processing_moss_transcribe_diarize import MossTranscribeDiarizeProcessor
+except ImportError:
+    MossTranscribeDiarizeConfig = None
+    MossTranscribeDiarizeForConditionalGeneration = None
+    MossTranscribeDiarizeModel = None
+    MossTranscribeDiarizePreTrainedModel = None
+    VQAdaptor = None
+    MossTranscribeDiarizeProcessor = None
 from .subtitle import (
     SubtitleSegment,
     SubtitleStyle,
