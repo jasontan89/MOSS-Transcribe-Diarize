@@ -11,4 +11,4 @@ hf_cache/
 tests/
 assets/
 examples/
-*.md
+!README.md
